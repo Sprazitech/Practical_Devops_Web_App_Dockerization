@@ -1,0 +1,23 @@
+# dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# environment files
+.env
+*.env
+
+# logs and temp
+logs
+*.log
+tmp
+__pycache__
+coverage
+dist
+
+# editor and OS files
+.DS_Store
+.vscode
+.idea
+.git
+.gitignore

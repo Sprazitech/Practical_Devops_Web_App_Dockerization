@@ -1,3 +1,4 @@
+require('dotenv').config();
 const transactionService = require('./TransactionService');
 const mysql = require('mysql');
 const express = require('express');
@@ -16,7 +17,7 @@ app.use(cors());
 // This is for troubleshooting to print the credentials on the terminal
 console.log('DB_HOST:', process.env.DB_HOST,);
 console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_PASSWORD:', process.env.DB_PWD);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
 console.log('DB_DATABASE:', process.env.DB_DATABASE);
 
 
@@ -24,7 +25,7 @@ console.log('DB_DATABASE:', process.env.DB_DATABASE);
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
-    password: process.env.DB_PWD,
+    password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE
   });
 
@@ -62,88 +63,231 @@ function createTables() {
 createTables();
 
 
+// // ROUTES FOR OUR API
+// // =======================================================
+
+// // Health Checking
+// app.get('/health',(req,res)=>{
+//     res.json("This is the health check");
+// });
+
+
+
+// // ADD TRANSACTION
+// app.post('/api/transactions', (req,res)=>{
+//     var response = "";
+//     try{
+//         console.log(req.body);
+//         console.log(req.body.amount);
+//         console.log(req.body.desc);
+//         var success = transactionService.addTransaction(req.body.amount,req.body.desc);
+//         if (success === 200) res.json({ message: 'added transaction successfully'});
+//     }catch (err){
+//         res.json({ message: 'something went wrong', error : err.message});
+//     }
+// });
+
+// // GET ALL TRANSACTIONS
+// app.get('/api/transactions',(req,res)=>{
+//     try{
+//         var transactionList = [];
+//        transactionService.getAllTransactions(function (results) {
+//             console.log("we are in the call back:");
+//             for (const row of results) {
+//                 transactionList.push({ "id": row.id, "amount": row.amount, "description": row.description });
+//             }
+//             console.log(transactionList);
+//             res.statusCode = 200;
+//             res.json({"result":transactionList});
+//         });
+//     }catch (err){
+//         res.json({message:"could not get all transactions",error: err.message});
+//     }
+// });
+
+// //DELETE ALL TRANSACTIONS
+// app.delete('/api/transactions',(req,res)=>{
+//     try{
+//         transactionService.deleteAllTransactions(function(result){
+//             res.statusCode = 200;
+//             res.json({message:"delete function execution finished."})
+//         })
+//     }catch (err){
+//         res.json({message: "Deleting all transactions may have failed.", error:err.message});
+//     }
+// });
+
+// // DELETE one transaction by ID
+// app.delete('/api/transactions/:id', (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     transactionService.deleteTransactionById(id, function(result) {
+//       res.status(200).json({ message: `Transaction with id ${id} deleted.` });
+//     });
+//   } catch (err) {
+//     res.json({ message: "Error deleting transaction", error: err.message });
+//   }
+// });
+
+// // GET single transaction by ID
+// app.get('/api/transactions/:id', (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     transactionService.findTransactionById(id, function(result) {
+//       if (result.length > 0) {
+//         const { id, amount, description } = result[0];
+//         res.status(200).json({ id, amount, description });
+//       } else {
+//         res.status(404).json({ message: "Transaction not found" });
+//       }
+//     });
+//   } catch (err) {
+//     res.json({ message: "Error retrieving transaction", error: err.message });
+//   }
+// });
+
+
+//   app.listen(port, () => {
+//     console.log(`AB3 backend app listening at http://localhost:${port}`)
+//   })
+
 // ROUTES FOR OUR API
 // =======================================================
 
-//Health Checking
-app.get('/health',(req,res)=>{
-    res.json("This is the health check");
+// Root Welcome Route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Welcome to the AB3 Transaction API"
+  });
+});
+
+// Health Check Route
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "Service is healthy"
+  });
 });
 
 // ADD TRANSACTION
-app.post('/transaction', (req,res)=>{
-    var response = "";
-    try{
-        console.log(req.body);
-        console.log(req.body.amount);
-        console.log(req.body.desc);
-        var success = transactionService.addTransaction(req.body.amount,req.body.desc);
-        if (success = 200) res.json({ message: 'added transaction successfully'});
-    }catch (err){
-        res.json({ message: 'something went wrong', error : err.message});
+app.post('/api/transactions', (req, res) => {
+  try {
+    const { amount, desc } = req.body;
+    console.log("Add Transaction Request:", req.body);
+
+    const success = transactionService.addTransaction(amount, desc);
+    if (success === 200) {
+      res.status(201).json({
+        status: "success",
+        message: "Transaction added successfully"
+      });
+    } else {
+      res.status(500).json({
+        status: "error",
+        message: "Could not add transaction"
+      });
     }
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: "Something went wrong",
+      error: err.message
+    });
+  }
 });
 
 // GET ALL TRANSACTIONS
-app.get('/transaction',(req,res)=>{
-    try{
-        var transactionList = [];
-       transactionService.getAllTransactions(function (results) {
-            console.log("we are in the call back:");
-            for (const row of results) {
-                transactionList.push({ "id": row.id, "amount": row.amount, "description": row.description });
-            }
-            console.log(transactionList);
-            res.statusCode = 200;
-            res.json({"result":transactionList});
+app.get('/api/transactions', (req, res) => {
+  try {
+    transactionService.getAllTransactions(function (results) {
+      const transactionList = results.map(row => ({
+        id: row.id,
+        amount: row.amount,
+        description: row.description
+      }));
+
+      console.log("Fetched Transactions:", transactionList);
+
+      res.status(200).json({
+        status: "success",
+        data: transactionList
+      });
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: "Could not get all transactions",
+      error: err.message
+    });
+  }
+});
+
+// DELETE ALL TRANSACTIONS
+app.delete('/api/transactions', (req, res) => {
+  try {
+    transactionService.deleteAllTransactions(function(result) {
+      res.status(200).json({
+        status: "success",
+        message: "All transactions deleted successfully"
+      });
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: "Deleting all transactions may have failed",
+      error: err.message
+    });
+  }
+});
+
+// DELETE ONE TRANSACTION BY ID
+app.delete('/api/transactions/:id', (req, res) => {
+  try {
+    const id = req.params.id;
+    transactionService.deleteTransactionById(id, function(result) {
+      res.status(200).json({
+        status: "success",
+        message: `Transaction with id ${id} deleted successfully`
+      });
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: "Error deleting transaction",
+      error: err.message
+    });
+  }
+});
+
+// GET SINGLE TRANSACTION BY ID
+app.get('/api/transactions/:id', (req, res) => {
+  try {
+    const id = req.params.id;
+    transactionService.findTransactionById(id, function(result) {
+      if (result.length > 0) {
+        const { id, amount, description } = result[0];
+        res.status(200).json({
+          status: "success",
+          data: { id, amount, description }
         });
-    }catch (err){
-        res.json({message:"could not get all transactions",error: err.message});
-    }
-});
-
-//DELETE ALL TRANSACTIONS
-app.delete('/transaction',(req,res)=>{
-    try{
-        transactionService.deleteAllTransactions(function(result){
-            res.statusCode = 200;
-            res.json({message:"delete function execution finished."})
-        })
-    }catch (err){
-        res.json({message: "Deleting all transactions may have failed.", error:err.message});
-    }
-});
-
-//DELETE ONE TRANSACTION
-app.delete('/transaction/id', (req,res)=>{
-    try{
-        //probably need to do some kind of parameter checking
-        transactionService.deleteTransactionById(req.body.id, function(result){
-            res.statusCode = 200;
-            res.json({message: `transaction with id ${req.body.id} seemingly deleted`});
-        })
-    } catch (err){
-        res.json({message:"error deleting transaction", error: err.message});
-    }
-});
-
-//GET SINGLE TRANSACTION
-app.get('/transaction/id',(req,res)=>{
-    //also probably do some kind of parameter checking here
-    try{
-        transactionService.findTransactionById(req.body.id,function(result){
-            res.statusCode = 200;
-            var id = result[0].id;
-            var amt = result[0].amount;
-            var desc= result[0].desc;
-            res.json({"id":id,"amount":amt,"desc":desc});
+      } else {
+        res.status(404).json({
+          status: "error",
+          message: "Transaction not found"
         });
-
-    }catch(err){
-        res.json({message:"error retrieving transaction", error: err.message});
-    }
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: "Error retrieving transaction",
+      error: err.message
+    });
+  }
 });
 
-  app.listen(port, () => {
-    console.log(`AB3 backend app listening at http://localhost:${port}`)
-  })
+// Start server
+app.listen(port, () => {
+  console.log(`AB3 backend app listening at http://localhost:${port}`);
+});

@@ -21,10 +21,10 @@
           }
 
         populateData(){
-            this.fetch_retry('/api/transaction',3)
+            this.fetch_retry('http://localhost:4000/api/transactions',3)
             .then(res => res.json())
             .then((data) => {
-              this.setState({ transactions : data.result });
+              this.setState({ transactions: data.data });
               console.log("state set");
               console.log(this.state.transactions);
             })
@@ -59,7 +59,7 @@
            const requestOptions = {
                method: 'DELETE'
            }
-           fetch('/api/transaction', requestOptions)
+           fetch('http://localhost:4000/api/transactions', requestOptions)
            .then(response => response.json())
            .then(data => this.populateData())
 
@@ -76,7 +76,7 @@
                 body: JSON.stringify({"amount":this.state.text_amt, "desc" :this.state.text_desc})
             }
             
-            fetch('/api/transaction', requestOptions)
+            fetch('http://localhost:4000/api/transactions', requestOptions)
             .then(response => response.json())
             .then(data => this.populateData())
             
