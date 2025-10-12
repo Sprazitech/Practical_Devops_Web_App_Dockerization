@@ -1,56 +1,86 @@
 
 
+# services:
+#   frontend:
+#     build: ./application-code/web-tier        #  Make sure your React app is actually inside this folder
+#     container_name: web-tier
+#     ports:
+#       - "3000:80"
+#     depends_on:
+#       - backend
+#     networks:
+#       - app-network
+
+#   backend:
+#     build: ./application-code/app-tier      #  Points to your Node.js backend folder
+#     container_name: app-tier
+#     ports:
+#       - "4000:4000"
+#     env_file:
+#       - ./application-code/app-tier/.env        #  This should contain your backend DB credentials
+#     depends_on:
+#       - mysql_db
+#     networks:
+#       - app-network
+    
+#   mysql_db:
+#     image: mysql:8.0
+#     container_name: mysql_db
+#     restart: always
+#     env_file:
+#       - ./application-code/app-tier/.env
+#     environment:
+#       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+#       MYSQL_DATABASE: ${MYSQL_DATABASE}
+#       MYSQL_USER: ${MYSQL_USER}
+#       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+#       MYSQL_ROOT_HOST: "%"
+#     command: --default-authentication-plugin=mysql_native_password
+#     ports:
+#        - "3307:3306"
+#     volumes:
+#       - mysql_data:/var/lib/mysql
+#     networks:
+#       - app-network
+#     healthcheck:
+#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#       interval: 10s
+#       retries: 5
+#       start_period: 30s
+
+# networks:
+#   app-network:
+#     driver: bridge
+
+# volumes:
+#   mysql_data:
+
+
+
+version: "3.9"
+
 services:
   frontend:
-    build: ./application-code/web-tier        #  Make sure your React app is actually inside this folder
+    build: ./application-code/web-tier
     container_name: web-tier
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - backend
     networks:
       - app-network
 
   backend:
-    build: ./application-code/app-tier      #  Points to your Node.js backend folder
+    build: ./application-code/app-tier
     container_name: app-tier
     ports:
       - "4000:4000"
     env_file:
-      - ./application-code/app-tier/.env        #  This should contain your backend DB credentials
-    depends_on:
-      - mysql_db
-    networks:
-      - app-network
-    
-  mysql_db:
-    image: mysql:8.0
-    container_name: mysql_db
-    restart: always
-    env_file:
       - ./application-code/app-tier/.env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_HOST: "%"
-    command: --default-authentication-plugin=mysql_native_password
-    ports:
-       - "3307:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
     networks:
       - app-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
+    command: ["/app/wait.sh"]
 
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  mysql_data:
