@@ -54,3 +54,4 @@ node# Ignore all node_modules folders
 # Docker
 *.tar
 _modules/
+three-tier-web-app.zip
