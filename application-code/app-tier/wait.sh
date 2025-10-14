@@ -12,7 +12,7 @@
 # npm start
 
 
-#!/bin/bash
+!/bin/bash
 echo " Waiting for RDS to be ready..."
 
 until mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" --silent; do
