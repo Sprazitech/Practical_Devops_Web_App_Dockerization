@@ -20,8 +20,9 @@
 # # Default command: run wait.sh
 # CMD ["bash", "./wait.sh"]
 
+FROM node:18
 
-FROM node:18-alpine
+RUN apt-get update && apt-get install -y bash default-mysql-client && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -34,5 +35,4 @@ RUN chmod +x wait.sh
 
 EXPOSE 4000
 
-CMD ["./wait.sh"]
-
+CMD ["bash", "wait.sh"]
