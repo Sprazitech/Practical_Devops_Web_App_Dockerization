@@ -49,7 +49,7 @@ jobs:
 
       # ========= SONAR SCAN =========
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
+        uses: sonarsource/sonarcloud-quality-gate-action@v1.1.0
         with:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
