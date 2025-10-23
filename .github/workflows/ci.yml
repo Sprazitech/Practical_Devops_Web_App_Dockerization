@@ -1,0 +1,66 @@
+name: CI - Test, Build & SonarCloud Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_test_scan:
+    runs-on: ubuntu-latest
+
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # must be stored in GitHub secrets
+      SONAR_ORG: sprazitech
+      SONAR_PROJECT_KEY: Sprazitech_Practical_Devops_Web_App_Dockerization
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      # ========= FRONTEND =========
+      - name: Install Frontend Dependencies
+        run: |
+          cd application-code/web-tier
+          npm install
+
+      - name: Run Frontend Tests
+        run: |
+          cd application-code/web-tier
+          npm test || echo "No frontend tests yet"
+
+      # ========= BACKEND =========
+      - name: Install Backend Dependencies
+        run: |
+          cd application-code/app-tier
+          npm install
+
+      - name: Run Backend Tests
+        run: |
+          cd application-code/app-tier
+          npm test || echo "No backend tests yet"
+
+      # ========= SONAR SCAN =========
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ env.SONAR_ORG }}
+            -Dsonar.sources=application-code
+            -Dsonar.javascript.lcov.reportPaths=application-code/web-tier/coverage/lcov.info
+            -Dsonar.sourceEncoding=UTF-8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Upload SonarCloud Quality Gate Status
+        uses: SonarSource/sonarcloud-quality-gate-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -183,6 +183,23 @@ resource "aws_instance" "ubuntu_server" {
 }
 
 # -------------------------------
+# Elastic IP for EC2 Instance
+# -------------------------------
+resource "aws_eip" "ec2_eip" {
+  instance = aws_instance.ubuntu_server.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "three-tier-ec2-eip"
+  }
+}
+
+output "ec2_elastic_ip" {
+  description = "Static Elastic IP address for EC2"
+  value       = aws_eip.ec2_eip.public_ip
+}
+
+# -------------------------------
 # RDS MySQL Instance (Private)
 # -------------------------------
 resource "aws_db_subnet_group" "rds_subnets" {
