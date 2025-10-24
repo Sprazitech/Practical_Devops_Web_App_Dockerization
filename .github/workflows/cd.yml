@@ -54,6 +54,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            echo "connected"
             mkdir -p ~/deploy-three-tier
             cd ~/deploy-three-tier
 

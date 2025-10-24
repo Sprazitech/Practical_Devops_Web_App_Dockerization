@@ -1,64 +1,112 @@
-const dbcreds = require('./DbConfig');
-const mysql = require('mysql');
+// const dbcreds = require('./DbConfig');
+// const mysql = require('mysql');
 
-const con = mysql.createConnection({
-    host: dbcreds.DB_HOST,
-    user: dbcreds.DB_USER,
-    password: dbcreds.DB_PWD,
-    database: dbcreds.DB_DATABASE
-});
+// const con = mysql.createConnection({
+//   host: dbcreds.DB_HOST,
+//   user: dbcreds.DB_USER,
+//   password: dbcreds.DB_PWD,
+//   database: dbcreds.DB_DATABASE
+// });
 
-function addTransaction(amount,desc){
-    var mysql = `INSERT INTO \`transactions\` (\`amount\`, \`description\`) VALUES ('${amount}','${desc}')`;
-    con.query(mysql, function(err,result){
-        if (err) throw err;
-        console.log("Adding to the table should have worked");
-    }) 
-    return 200;
+// con.connect(err => {
+//   if (err) throw err;
+//   console.log("Connected to MySQL database");
+// });
+
+// // Use Promises for all DB operations
+// function addTransaction(amount, desc) {
+//   const query = `INSERT INTO transactions (amount, description) VALUES (?, ?)`;
+//   return new Promise((resolve, reject) => {
+//     con.query(query, [amount, desc], (err, result) => {
+//       if (err) return reject(err);
+//       resolve(result.insertId);
+//     });
+//   });
+// }
+
+// function getAllTransactions() {
+//   const query = "SELECT * FROM transactions";
+//   return new Promise((resolve, reject) => {
+//     con.query(query, (err, results) => {
+//       if (err) return reject(err);
+//       resolve(results);
+//     });
+//   });
+// }
+
+// function findTransactionById(id) {
+//   const query = "SELECT * FROM transactions WHERE id = ?";
+//   return new Promise((resolve, reject) => {
+//     con.query(query, [id], (err, results) => {
+//       if (err) return reject(err);
+//       resolve(results);
+//     });
+//   });
+// }
+
+// function deleteAllTransactions() {
+//   const query = "DELETE FROM transactions";
+//   return new Promise((resolve, reject) => {
+//     con.query(query, (err, results) => {
+//       if (err) return reject(err);
+//       resolve(results);
+//     });
+//   });
+// }
+
+// function deleteTransactionById(id) {
+//   const query = "DELETE FROM transactions WHERE id = ?";
+//   return new Promise((resolve, reject) => {
+//     con.query(query, [id], (err, results) => {
+//       if (err) return reject(err);
+//       resolve(results);
+//     });
+//   });
+// }
+
+// module.exports = {
+//   addTransaction,
+//   getAllTransactions,
+//   findTransactionById,
+//   deleteAllTransactions,
+//   deleteTransactionById
+// };
+
+
+// TransactionService.js
+const pool = require('./DbConfig');
+
+class TransactionService {
+
+  static async addTransaction(amount, desc) {
+    const sql = 'INSERT INTO transactions (amount, description) VALUES (?, ?)';
+    const [result] = await pool.execute(sql, [amount, desc]);
+    return result.insertId;
+  }
+
+  static async getAllTransactions() {
+    const sql = 'SELECT * FROM transactions';
+    const [rows] = await pool.execute(sql);
+    return rows;
+  }
+
+  static async findTransactionById(id) {
+    const sql = 'SELECT * FROM transactions WHERE id = ?';
+    const [rows] = await pool.execute(sql, [id]);
+    return rows;
+  }
+
+  static async deleteAllTransactions() {
+    const sql = 'DELETE FROM transactions';
+    await pool.execute(sql);
+    return true;
+  }
+
+  static async deleteTransactionById(id) {
+    const sql = 'DELETE FROM transactions WHERE id = ?';
+    await pool.execute(sql, [id]);
+    return true;
+  }
 }
 
-function getAllTransactions(callback){
-    var mysql = "SELECT * FROM transactions";
-    con.query(mysql, function(err,result){
-        if (err) throw err;
-        console.log("Getting all transactions...");
-        return(callback(result));
-    });
-}
-
-function findTransactionById(id,callback){
-    var mysql = `SELECT * FROM transactions WHERE id = ${id}`;
-    con.query(mysql, function(err,result){
-        if (err) throw err;
-        console.log(`retrieving transactions with id ${id}`);
-        return(callback(result));
-    }) 
-}
-
-function deleteAllTransactions(callback){
-    var mysql = "DELETE FROM transactions";
-    con.query(mysql, function(err,result){
-        if (err) throw err;
-        console.log("Deleting all transactions...");
-        return(callback(result));
-    }) 
-}
-
-function deleteTransactionById(id, callback){
-    var mysql = `DELETE FROM transactions WHERE id = ${id}`;
-    con.query(mysql, function(err,result){
-        if (err) throw err;
-        console.log(`Deleting transactions with id ${id}`);
-        return(callback(result));
-    }) 
-}
-
-
-module.exports = {addTransaction ,getAllTransactions, deleteAllTransactions, deleteAllTransactions, findTransactionById, deleteTransactionById};
-
-
-
-
-
-
-
+module.exports = TransactionService;

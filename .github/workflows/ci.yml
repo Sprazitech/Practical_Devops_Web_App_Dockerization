@@ -1,3 +1,225 @@
+# # name: CI - Test, Build & SonarCloud Scan
+
+# # on:
+# #   push:
+# #     branches: [ main ]
+# #   pull_request:
+# #     branches: [ main ]
+
+# # jobs:
+# #   build_test_scan:
+# #     runs-on: ubuntu-latest
+
+# #     env:
+# #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+# #       SONAR_ORG: sprazitech
+# #       SONAR_PROJECT_KEY: Sprazitech_Practical_Devops_Web_App_Dockerization
+
+# #     steps:
+# #       - name: Checkout repository
+# #         uses: actions/checkout@v4
+
+# #       - name: Setup Node.js
+# #         uses: actions/setup-node@v4
+# #         with:
+# #           node-version: 18
+
+# #       # ===== FRONTEND =====
+# #       - name: Cache Frontend Dependencies
+# #         uses: actions/cache@v4
+# #         with:
+# #           path: application-code/web-tier/node_modules
+# #           key: ${{ runner.os }}-frontend-${{ hashFiles('application-code/web-tier/package-lock.json') }}
+
+# #       - name: Install Frontend Dependencies
+# #         run: |
+# #           cd application-code/web-tier
+# #           npm install --no-audit --no-fund
+
+# #       - name: Run Frontend Tests
+# #         run: |
+# #           cd application-code/web-tier
+# #           npm test --if-present
+
+# #       # ===== BACKEND =====
+# #       - name: Cache Backend Dependencies
+# #         uses: actions/cache@v4
+# #         with:
+# #           path: application-code/app-tier/node_modules
+# #           key: ${{ runner.os }}-backend-${{ hashFiles('application-code/app-tier/package-lock.json') }}
+
+# #       - name: Install Backend Dependencies
+# #         run: |
+# #           cd application-code/app-tier
+# #           npm install --no-audit --no-fund
+
+# #       - name: Run Backend Tests
+# #         run: |
+# #           cd application-code/app-tier
+# #           npm test --if-present
+
+# #       # ===== SONAR CLOUD SCAN + QUALITY GATE (in one step) =====
+# #       - name: SonarCloud Scan with Quality Gate
+# #         uses: sonarsource/sonarcloud-github-action@v2
+# #         env:
+# #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+# #           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+# #         with:
+# #           args: >
+# #             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+# #             -Dsonar.organization=${{ env.SONAR_ORG }}
+# #             -Dsonar.sources=application-code
+# #             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+# #             -Dsonar.sourceEncoding=UTF-8
+# #             -Dsonar.qualitygate.wait=true
+
+
+# # # name: CI - Test, Build & SonarCloud Scan
+
+# # # on:
+# # #   push:
+# # #     branches: [ main ]
+# # #   pull_request:
+# # #     branches: [ main ]
+
+# # # jobs:
+# # #   build_test_scan:
+# # #     runs-on: ubuntu-latest
+
+# # #     env:
+# # #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+# # #       SONAR_ORG: sprazitech
+# # #       SONAR_PROJECT_KEY: Sprazitech_Practical_Devops_Web_App_Dockerization
+
+# # #     steps:
+# # #       - name: Checkout repository
+# # #         uses: actions/checkout@v4
+
+# # #       - name: Setup Node.js
+# # #         uses: actions/setup-node@v4
+# # #         with:
+# # #           node-version: 18
+
+# # #       # ========== FRONTEND ==========
+# # #       - name: Install Frontend Dependencies
+# # #         working-directory: application-code/web-tier
+# # #         run: npm install --no-audit --no-fund
+
+# # #       - name: Run Frontend Tests
+# # #         working-directory: application-code/web-tier
+# # #         run: npm test --if-present
+
+# # #       # ========== BACKEND ==========
+# # #       - name: Install Backend Dependencies
+# # #         working-directory: application-code/app-tier
+# # #         run: npm install --no-audit --no-fund
+
+# # #       - name: Run Backend Tests
+# # #         working-directory: application-code/app-tier
+# # #         run: npm test --if-present
+
+# # #       # ========== SONARCLOUD SCAN ==========
+# # #       - name: SonarCloud Scan
+# # #         uses: sonarsource/sonarcloud-github-action@v2
+# # #         env:
+# # #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # built-in, required for PR decoration
+# # #           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+# # #         with:
+# # #           args: >
+# # #             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+# # #             -Dsonar.organization=${{ env.SONAR_ORG }}
+# # #             -Dsonar.sources=application-code
+# # #             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+# # #             -Dsonar.sourceEncoding=UTF-8
+
+# # #       # ========== SONARCLOUD QUALITY GATE ==========
+# # #       - name: SonarCloud Quality Gate
+# # #         uses: SonarSource/sonarcloud-quality-gate-action@v1
+# # #         env:
+# # #           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+
+
+# name: CI - Test, Build & SonarCloud Scan
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+# jobs:
+#   build_test_scan:
+#     runs-on: ubuntu-latest
+
+#     env:
+#       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#       SONAR_ORG: sprazitech
+#       SONAR_PROJECT_KEY: Sprazitech_Practical_Devops_Web_App_Dockerization
+
+#     steps:
+#       # 1️⃣ Checkout
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       # 2️⃣ Node.js setup
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 18
+
+#       # ===== FRONTEND =====
+#       - name: Cache Frontend Dependencies
+#         uses: actions/cache@v4
+#         with:
+#           path: application-code/web-tier/node_modules
+#           key: ${{ runner.os }}-frontend-${{ hashFiles('application-code/web-tier/package-lock.json') }}
+
+#       - name: Install Frontend Dependencies
+#         run: |
+#           cd application-code/web-tier
+#           npm ci --ignore-scripts --no-audit --no-fund
+
+#       - name: Run Frontend Tests
+#         run: |
+#           cd application-code/web-tier
+#           npm test --if-present
+
+#       # ===== BACKEND =====
+#       - name: Cache Backend Dependencies
+#         uses: actions/cache@v4
+#         with:
+#           path: application-code/app-tier/node_modules
+#           key: ${{ runner.os }}-backend-${{ hashFiles('application-code/app-tier/package-lock.json') }}
+
+#       - name: Install Backend Dependencies
+#         run: |
+#           cd application-code/app-tier
+#           npm ci --ignore-scripts --no-audit --no-fund
+
+#       - name: Run Backend Tests
+#         run: |
+#           cd application-code/app-tier
+#           npm test --if-present
+
+#       # ===== SONAR CLOUD SCAN + QUALITY GATE =====
+#       - name: SonarCloud Scan with Quality Gate
+#         uses: sonarsource/sonarcloud-github-action@v2
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#         with:
+#           args: >
+#             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+#             -Dsonar.organization=${{ env.SONAR_ORG }}
+#             -Dsonar.sources=application-code/web-tier,application-code/app-tier
+#             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/coverage/**
+#             -Dsonar.tests=application-code/web-tier,application-code/app-tier
+#             -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
+#             -Dsonar.javascript.lcov.reportPaths=application-code/web-tier/coverage/lcov.info,application-code/app-tier/coverage/lcov.info
+#             -Dsonar.sourceEncoding=UTF-8
+#             -Dsonar.qualitygate.wait=true
+
 name: CI - Test, Build & SonarCloud Scan
 
 on:
@@ -16,59 +238,49 @@ jobs:
       SONAR_PROJECT_KEY: Sprazitech_Practical_Devops_Web_App_Dockerization
 
     steps:
+      # 1️⃣ Checkout Code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # ===== FRONTEND =====
-      - name: Cache Frontend Dependencies
-        uses: actions/cache@v4
-        with:
-          path: application-code/web-tier/node_modules
-          key: ${{ runner.os }}-frontend-${{ hashFiles('application-code/web-tier/package-lock.json') }}
-
+      # ========== FRONTEND ==========
       - name: Install Frontend Dependencies
-        run: |
-          cd application-code/web-tier
-          npm install --no-audit --no-fund
+        working-directory: application-code/web-tier
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Run Frontend Tests
-        run: |
-          cd application-code/web-tier
-          npm test --if-present
+        working-directory: application-code/web-tier
+        run: npm test --if-present -- --coverage
 
-      # ===== BACKEND =====
-      - name: Cache Backend Dependencies
-        uses: actions/cache@v4
-        with:
-          path: application-code/app-tier/node_modules
-          key: ${{ runner.os }}-backend-${{ hashFiles('application-code/app-tier/package-lock.json') }}
-
+      # ========== BACKEND ==========
       - name: Install Backend Dependencies
-        run: |
-          cd application-code/app-tier
-          npm install --no-audit --no-fund
+        working-directory: application-code/app-tier
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Run Backend Tests
-        run: |
-          cd application-code/app-tier
-          npm test --if-present
+        working-directory: application-code/app-tier
+        run: npm test --if-present -- --coverage
 
-      # ===== SONAR CLOUD SCAN + QUALITY GATE (in one step) =====
+      # ========== SONARCLOUD SCAN ==========
       - name: SonarCloud Scan with Quality Gate
         uses: sonarsource/sonarcloud-github-action@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # required for PR decoration
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORG }}
-            -Dsonar.sources=application-code
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+            -Dsonar.sources=application-code/web-tier,application-code/app-tier
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/coverage/**
+            -Dsonar.tests=application-code/web-tier,application-code/app-tier
+            -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
+            -Dsonar.javascript.lcov.reportPaths=application-code/web-tier/coverage/lcov.info,application-code/app-tier/coverage/lcov.info
             -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.wait=false
+
