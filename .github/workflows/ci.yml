@@ -59,7 +59,7 @@ jobs:
 
       # ================== QUALITY GATE ==================
       - name: Check SonarCloud Quality Gate
-        uses: SonarSource/sonarcloud-quality-gate-action@v1.1.0
+        uses: SonarSource/sonarcloud-quality-gate-action@v1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
