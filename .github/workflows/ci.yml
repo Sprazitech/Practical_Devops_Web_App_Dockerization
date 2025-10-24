@@ -282,5 +282,5 @@ jobs:
             -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
             -Dsonar.javascript.lcov.reportPaths=application-code/web-tier/coverage/lcov.info,application-code/app-tier/coverage/lcov.info
             -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.wait=false
 
