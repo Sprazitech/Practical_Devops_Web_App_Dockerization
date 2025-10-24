@@ -74,7 +74,7 @@
 
 
 // TransactionService.js
-const pool = require('./db');
+const pool = require('./DbConfig');
 
 class TransactionService {
 
