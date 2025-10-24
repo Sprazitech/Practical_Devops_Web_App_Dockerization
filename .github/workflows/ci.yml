@@ -16,38 +16,54 @@ jobs:
       SONAR_PROJECT_KEY: Sprazitech_Practical_Devops_Web_App_Dockerization
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ================== SETUP NODE ==================
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
 
-      # ========= FRONTEND =========
+      # ================== FRONTEND CACHE ==================
+      - name: Cache Frontend Dependencies
+        uses: actions/cache@v4
+        with:
+          path: application-code/web-tier/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('application-code/web-tier/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-
+
       - name: Install Frontend Dependencies
         run: |
           cd application-code/web-tier
-          npm install
+          npm install --no-audit --no-fund
 
       - name: Run Frontend Tests
         run: |
           cd application-code/web-tier
           npm test --if-present
 
-      # ========= BACKEND =========
+      # ================== BACKEND CACHE ==================
+      - name: Cache Backend Dependencies
+        uses: actions/cache@v4
+        with:
+          path: application-code/app-tier/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('application-code/app-tier/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-
+
       - name: Install Backend Dependencies
         run: |
           cd application-code/app-tier
-          npm install
+          npm install --no-audit --no-fund
 
       - name: Run Backend Tests
         run: |
           cd application-code/app-tier
           npm test --if-present
 
-      # ========= SONAR SCAN =========
+      # ================== SONAR SCAN ==================
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
         env:
@@ -61,10 +77,8 @@ jobs:
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
             -Dsonar.sourceEncoding=UTF-8
 
-      # ========= QUALITY GATE =========
+      # ================== QUALITY GATE CHECK ==================
       - name: SonarCloud Quality Gate Check
-        uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
+        uses: sonarsource/sonarcloud-quality-gate-action@v1.0.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          host-url: https://sonarcloud.io
