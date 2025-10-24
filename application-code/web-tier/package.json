@@ -1,5 +1,3 @@
-
-
 {
   "name": "aws-3tier-web-layer",
   "version": "0.1.0",
@@ -16,7 +14,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --watchAll=false",
+    "test": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -40,7 +38,9 @@
   "homepage": ".",
   "proxy": "http://localhost:4000",
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.0",
-    "@testing-library/react": "^13.4.0"
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^13.4.0",
+    "babel-jest": "^30.2.0",
+    "jest": "^27.5.1"
   }
 }
