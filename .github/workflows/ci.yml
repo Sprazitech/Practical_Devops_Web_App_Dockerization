@@ -63,7 +63,7 @@ jobs:
           cd application-code/app-tier
           npm test --if-present
 
-            # ================== SONAR SCAN ==================
+      # ================== SONAR SCAN ==================
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
         env:
