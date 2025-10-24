@@ -54,10 +54,23 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "connected"
+            echo "🔧 Installing Docker & Docker Compose..."
+            sudo apt-get update -y
+            sudo apt-get install -y docker.io
+            sudo systemctl enable docker
+            sudo systemctl start docker
+
+            # Install Docker Compose
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+              -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+
+            echo "✅ Docker installation complete"
+
             mkdir -p ~/deploy-three-tier
             cd ~/deploy-three-tier
 
+            # Create docker-compose file
             cat > docker-compose.production.yml <<'EOF'
             version: "3.8"
             services:
@@ -86,6 +99,7 @@ jobs:
                 driver: bridge
             EOF
 
+            # Create .env if missing
             if [ ! -f .env ]; then
               echo "DB_HOST=${{ secrets.RDS_HOST }}" > .env
               echo "DB_USER=${{ secrets.RDS_USER }}" >> .env
@@ -94,6 +108,7 @@ jobs:
               chmod 600 .env
             fi
 
-            docker compose -f docker-compose.production.yml pull
-            docker compose -f docker-compose.production.yml up -d
+            # Deploy using Docker Compose
+            docker-compose -f docker-compose.production.yml pull
+            docker-compose -f docker-compose.production.yml up -d
             docker system prune -f
