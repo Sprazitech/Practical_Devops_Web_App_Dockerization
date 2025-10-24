@@ -8,11 +8,11 @@ This is an updated code from the original code: [AWS Three Tier Web Architecture
 - [Terraform](#Terraform)
 - [Getting Started](#getting-started)
 
-## Application code
+### Application code
 The `appliation-code` directory contains source codes for the `app-tier` and `web-tier`
 
 ## Terraform
-The `terraform` directory contains `infra` to create the resources with terraform and `s3-db` to create the remote backend
+The `terraform` directory contains `infra` to create the resources with terraform and `s3-db` to create the remote backend.
 
 ## Getting Started
 After a `terraform apply` on the `infra` directory, do these manual changes on the aws console. The instances will be accessed via ssm
