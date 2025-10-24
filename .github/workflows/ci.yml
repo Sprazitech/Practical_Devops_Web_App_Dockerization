@@ -23,28 +23,43 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
 
-      # ================== FRONTEND ==================
+      # ===== FRONTEND =====
+      - name: Cache Frontend Dependencies
+        uses: actions/cache@v4
+        with:
+          path: application-code/web-tier/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('application-code/web-tier/package-lock.json') }}
+
       - name: Install Frontend Dependencies
-        working-directory: application-code/web-tier
-        run: npm install --no-audit --no-fund
+        run: |
+          cd application-code/web-tier
+          npm install --no-audit --no-fund
 
       - name: Run Frontend Tests
-        working-directory: application-code/web-tier
-        run: npm test --if-present
+        run: |
+          cd application-code/web-tier
+          npm test --if-present
 
-      # ================== BACKEND ==================
+      # ===== BACKEND =====
+      - name: Cache Backend Dependencies
+        uses: actions/cache@v4
+        with:
+          path: application-code/app-tier/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('application-code/app-tier/package-lock.json') }}
+
       - name: Install Backend Dependencies
-        working-directory: application-code/app-tier
-        run: npm install --no-audit --no-fund
+        run: |
+          cd application-code/app-tier
+          npm install --no-audit --no-fund
 
       - name: Run Backend Tests
-        working-directory: application-code/app-tier
-        run: npm test --if-present
+        run: |
+          cd application-code/app-tier
+          npm test --if-present
 
-      # ================== SONAR SCAN ==================
-      - name: SonarCloud Scan
+      # ===== SONAR CLOUD SCAN + QUALITY GATE (in one step) =====
+      - name: SonarCloud Scan with Quality Gate
         uses: sonarsource/sonarcloud-github-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,13 +71,4 @@ jobs:
             -Dsonar.sources=application-code
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
             -Dsonar.sourceEncoding=UTF-8
-
-      # ================== QUALITY GATE ==================
-      - name: Check SonarCloud Quality Gate
-        uses: SonarSource/sonarcloud-quality-gate-action@v1
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectKey: ${{ env.SONAR_PROJECT_KEY }}
-          organization: ${{ env.SONAR_ORG }}
-          host-url: https://sonarcloud.io
+            -Dsonar.qualitygate.wait=true
