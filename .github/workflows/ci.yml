@@ -63,7 +63,7 @@ jobs:
           cd application-code/app-tier
           npm test --if-present
 
-      # ================== SONAR SCAN ==================
+            # ================== SONAR SCAN ==================
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
         env:
@@ -79,6 +79,10 @@ jobs:
 
       # ================== QUALITY GATE CHECK ==================
       - name: SonarCloud Quality Gate Check
-        uses: sonarsource/sonarcloud-quality-gate-action@v1.0.1
+        uses: SonarSource/sonarcloud-quality-gate-action@v1.0.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectKey: ${{ env.SONAR_PROJECT_KEY }}
+          organization: ${{ env.SONAR_ORG }}
+          host-url: https://sonarcloud.io
