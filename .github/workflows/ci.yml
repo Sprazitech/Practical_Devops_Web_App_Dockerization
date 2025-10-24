@@ -212,9 +212,9 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORG }}
-            -Dsonar.sources=application-code
+            -Dsonar.sources=application-code/web-tier,application-code/app-tier
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/coverage/**
-            -Dsonar.tests=application-code
+            -Dsonar.tests=application-code/web-tier,application-code/app-tier
             -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
             -Dsonar.javascript.lcov.reportPaths=application-code/web-tier/coverage/lcov.info,application-code/app-tier/coverage/lcov.info
             -Dsonar.sourceEncoding=UTF-8
