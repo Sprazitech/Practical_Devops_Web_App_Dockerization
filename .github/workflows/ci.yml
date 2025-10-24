@@ -78,11 +78,7 @@ jobs:
             -Dsonar.sourceEncoding=UTF-8
 
       # ================== QUALITY GATE CHECK ==================
-      - name: SonarCloud Quality Gate Check
+      - name: Check SonarCloud Quality Gate
         uses: SonarSource/sonarcloud-quality-gate-action@v1.0.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectKey: ${{ env.SONAR_PROJECT_KEY }}
-          organization: ${{ env.SONAR_ORG }}
-          host-url: https://sonarcloud.io
