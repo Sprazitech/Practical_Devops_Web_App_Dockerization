@@ -11,56 +11,64 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # must be stored in GitHub secrets
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_ORG: sprazitech
       SONAR_PROJECT_KEY: Sprazitech_Practical_Devops_Web_App_Dockerization
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
 
-      # ========= FRONTEND =========
+      # ===== FRONTEND =====
+      - name: Cache Frontend Dependencies
+        uses: actions/cache@v4
+        with:
+          path: application-code/web-tier/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('application-code/web-tier/package-lock.json') }}
+
       - name: Install Frontend Dependencies
         run: |
           cd application-code/web-tier
-          npm install
+          npm install --no-audit --no-fund
 
       - name: Run Frontend Tests
         run: |
           cd application-code/web-tier
-          npm test || echo "No frontend tests yet"
+          npm test --if-present
 
-      # ========= BACKEND =========
+      # ===== BACKEND =====
+      - name: Cache Backend Dependencies
+        uses: actions/cache@v4
+        with:
+          path: application-code/app-tier/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('application-code/app-tier/package-lock.json') }}
+
       - name: Install Backend Dependencies
         run: |
           cd application-code/app-tier
-          npm install
+          npm install --no-audit --no-fund
 
       - name: Run Backend Tests
         run: |
           cd application-code/app-tier
-          npm test || echo "No backend tests yet"
+          npm test --if-present
 
-      # ========= SONAR SCAN =========
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
+      # ===== SONAR CLOUD SCAN + QUALITY GATE (in one step) =====
+      - name: SonarCloud Scan with Quality Gate
+        uses: sonarsource/sonarcloud-github-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORG }}
             -Dsonar.sources=application-code
-            -Dsonar.javascript.lcov.reportPaths=application-code/web-tier/coverage/lcov.info
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
             -Dsonar.sourceEncoding=UTF-8
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Upload SonarCloud Quality Gate Status
-        uses: SonarSource/sonarcloud-quality-gate-action@v1
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            -Dsonar.qualitygate.wait=true
