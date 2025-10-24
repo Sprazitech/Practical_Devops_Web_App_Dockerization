@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 
 describe('App Component Integration Tests', () => {
+
   test('renders Home route content', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -12,10 +13,9 @@ describe('App Component Integration Tests', () => {
       </MemoryRouter>
     );
 
-    // Check that the Home component text is rendered
+    // Home page h1 is rendered
     expect(screen.getByText(/aws 3-tier web app demo/i)).toBeInTheDocument();
-
-    // Optionally, check that the architecture image is present
+    // Home page image is rendered
     expect(screen.getByAltText(/3t web app architecture/i)).toBeInTheDocument();
   });
 
@@ -26,7 +26,7 @@ describe('App Component Integration Tests', () => {
       </MemoryRouter>
     );
 
-    // Check that the DB Demo link exists (text in navigation)
+    // DB Demo link is present in the nav
     expect(screen.getByText(/db demo/i)).toBeInTheDocument();
   });
 
@@ -37,16 +37,17 @@ describe('App Component Integration Tests', () => {
       </MemoryRouter>
     );
 
-    // Select the burger button using its aria-label
     const burgerButton = screen.getByRole('button', { name: /toggle menu/i });
-    
-    // Menu should be hidden initially
-    expect(screen.queryByRole('navigation')).toHaveAttribute('aria-hidden', 'true');
+    const menu = screen.getByTestId('main-menu'); // We will use data-testid
 
-    // Click the burger button
+    // Menu should be hidden initially
+    expect(menu).toHaveAttribute('aria-hidden', 'true');
+
+    // Click burger button
     fireEvent.click(burgerButton);
 
     // Menu should now be visible
-    expect(screen.getByRole('navigation')).toHaveAttribute('aria-hidden', 'false');
+    expect(menu).toHaveAttribute('aria-hidden', 'false');
   });
+
 });
