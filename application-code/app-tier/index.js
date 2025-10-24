@@ -46,9 +46,13 @@ app.get('/api/transactions', async (req, res) => {
 app.get('/api/transactions/:id', async (req, res) => {
   try {
     const id = req.params.id;
-    const results = await transactionService.findTransactionById(id);
-    if (results.length === 0) return res.status(404).json({ status: 'error', message: 'Transaction not found' });
-    res.status(200).json({ status: 'success', data: results[0] });
+    const transaction = await transactionService.getTransactionById(id); // ✅ FIXED NAME
+
+    if (!transaction) {
+      return res.status(404).json({ status: 'error', message: 'Transaction not found' });
+    }
+
+    res.status(200).json({ status: 'success', data: transaction });
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });
   }
