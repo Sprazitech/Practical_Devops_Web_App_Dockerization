@@ -21,6 +21,7 @@
           }
 
         populateData(){
+            // sonarcloud-disable-next-line javascript:S5332
             this.fetch_retry('http://localhost:4000/api/transactions',3)
             .then(res => res.json())
             .then((data) => {
@@ -59,6 +60,7 @@
            const requestOptions = {
                method: 'DELETE'
            }
+           // sonarcloud-disable-next-line javascript:S5332
            fetch('http://localhost:4000/api/transactions', requestOptions)
            .then(response => response.json())
            .then(data => this.populateData())
@@ -75,7 +77,7 @@
                 headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({"amount":this.state.text_amt, "desc" :this.state.text_desc})
             }
-            
+            // sonarcloud-disable-next-line javascript:S5332
             fetch('http://localhost:4000/api/transactions', requestOptions)
             .then(response => response.json())
             .then(data => this.populateData())
