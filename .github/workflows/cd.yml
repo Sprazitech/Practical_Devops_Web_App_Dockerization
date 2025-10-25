@@ -56,55 +56,50 @@ jobs:
           script: |
             echo " Installing Docker & Docker Compose..."
             sudo apt-get update -y
-            sudo apt-get install -y docker.io
+            sudo apt-get install -y docker.io curl
             sudo systemctl enable docker
             sudo systemctl start docker
 
-            # Install Docker Compose
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
-              -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            echo " Docker installation complete"
+            # Install Docker Compose if missing
+            if ! command -v docker-compose &> /dev/null; then
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+                -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+            echo " Docker & Compose Ready"
 
-            # Add user to docker group for permission and activate in this SSH session
-            sudo usermod -aG docker $USER
-            exec sg docker <<'SGEOF'
-            echo " Docker group activated for current session"
-
-            # Export images for compose
-            export IMAGE_FRONTEND="${IMAGE_FRONTEND}"
-            export IMAGE_BACKEND="${IMAGE_BACKEND}"
-
+            # Create deployment directory
             mkdir -p ~/deploy-three-tier
             cd ~/deploy-three-tier
 
-            # Create docker-compose file
-            cat > docker-compose.production.yml <<EOF
+            echo "🛠 Creating docker-compose.production.yml..."
+            cat > docker-compose.production.yml << 'EOC'
+            version: "3.8"
             services:
-              frontend:
-                image: ${IMAGE_FRONTEND}:latest
-                container_name: web-tier
-                restart: always
-                ports:
-                  - "80:80"
-                networks:
-                  - app-network
+            frontend:
+            image: ${IMAGE_FRONTEND}:latest
+            container_name: web-tier
+            restart: always
+            ports:
+            - "80:80"
+             networks:
+            - app-network
 
-              backend:
-                image: ${IMAGE_BACKEND}:latest
-                container_name: app-tier
-                restart: always
-                ports:
-                  - "4000:4000"
-                env_file:
-                  - .env
-                networks:
-                  - app-network
+            backend:
+            image: ${IMAGE_BACKEND}:latest
+            container_name: app-tier
+            restart: always
+            ports:
+            - "4000:4000"
+            env_file:
+            - .env
+            networks:
+            - app-network
 
             networks:
-              app-network:
-                driver: bridge
-            EOF
+            app-network:
+            driver: bridge
+            EOC
 
             # Generate .env file if not exists
             if [ ! -f .env ]; then
@@ -112,12 +107,14 @@ jobs:
               echo "DB_USER=${{ secrets.RDS_USER }}" >> .env
               echo "DB_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
               echo "DB_DATABASE=${{ secrets.RDS_DATABASE }}" >> .env
-              chmod 600 .env
+              sudo chmod 600 .env
             fi
+
+            echo " Adding user to Docker group..."
+            sudo usermod -aG docker $USER || true
 
             echo " Deploying containers..."
             sudo docker-compose -f docker-compose.production.yml pull
             sudo docker-compose -f docker-compose.production.yml up -d
             sudo docker system prune -f
             echo " Deployment Successful!"
-            SGEOF
