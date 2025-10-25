@@ -12,7 +12,7 @@ jobs:
     env:
       DOCKER_NAMESPACE: ${{ secrets.DOCKER_NAMESPACE }}
       IMAGE_FRONTEND: ${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_frontend
-      IMAGE_BACKEND: ${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_backend }}
+      IMAGE_BACKEND: ${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_backend
 
     steps:
       - name: Checkout Code
