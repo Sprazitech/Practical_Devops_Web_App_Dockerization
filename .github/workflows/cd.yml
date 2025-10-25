@@ -12,7 +12,7 @@ jobs:
     env:
       DOCKER_NAMESPACE: ${{ secrets.DOCKER_NAMESPACE }}
       IMAGE_FRONTEND: ${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_frontend
-      IMAGE_BACKEND: ${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_backend
+      IMAGE_BACKEND: ${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_backend }}
 
     steps:
       - name: Checkout
@@ -61,21 +61,28 @@ jobs:
             sudo systemctl start docker
 
             # Install Docker Compose
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
-              -o /usr/local/bin/docker-compose
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
 
-            echo "✅ Docker installation complete"
+            echo " Docker installation complete"
 
+            # Add user to docker group for permission
+            sudo usermod -aG docker $USER
+            newgrp docker <<EONG
+
+            # Export image variables for use inside docker-compose
+            export IMAGE_FRONTEND=${IMAGE_FRONTEND}
+            export IMAGE_BACKEND=${IMAGE_BACKEND}
+
+            # Prepare deployment directory
             mkdir -p ~/deploy-three-tier
             cd ~/deploy-three-tier
 
             # Create docker-compose file
-            cat > docker-compose.production.yml <<'EOF'
-            version: "3.8"
+            cat > docker-compose.production.yml <<EOF
             services:
               frontend:
-                image: $IMAGE_FRONTEND:latest
+                image: ${IMAGE_FRONTEND}:latest
                 container_name: web-tier
                 restart: always
                 ports:
@@ -84,7 +91,7 @@ jobs:
                   - app-network
 
               backend:
-                image: $IMAGE_BACKEND:latest
+                image: ${IMAGE_BACKEND}:latest
                 container_name: app-tier
                 restart: always
                 ports:
@@ -108,7 +115,8 @@ jobs:
               chmod 600 .env
             fi
 
-            # Deploy using Docker Compose
+            echo "🚀 Deploying containers..."
             sudo docker-compose -f docker-compose.production.yml pull
             sudo docker-compose -f docker-compose.production.yml up -d
             sudo docker system prune -f
+            EONG
