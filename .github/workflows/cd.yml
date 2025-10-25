@@ -109,6 +109,6 @@ jobs:
             fi
 
             # Deploy using Docker Compose
-            docker-compose -f docker-compose.production.yml pull
-            docker-compose -f docker-compose.production.yml up -d
-            docker system prune -f
+            sudo docker-compose -f docker-compose.production.yml pull
+            sudo docker-compose -f docker-compose.production.yml up -d
+            sudo docker system prune -f
