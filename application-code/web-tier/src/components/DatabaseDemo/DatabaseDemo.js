@@ -22,7 +22,7 @@
 
         populateData(){
             // sonarcloud-disable-next-line javascript:S5332
-            this.fetch_retry('http://54.173.109.232:4000/api/transactions',3)
+            this.fetch_retry('http://backend:4000/api/transactions',3)
             .then(res => res.json())
             .then((data) => {
               this.setState({ transactions: data.data });
@@ -61,7 +61,7 @@
                method: 'DELETE'
            }
            // sonarcloud-disable-next-line javascript:S5332
-           fetch('http://54.173.109.232:4000/api/transactions', requestOptions)
+           fetch('http://backend:4000/api/transactions', requestOptions)
            .then(response => response.json())
            .then(data => this.populateData())
 
@@ -78,7 +78,7 @@
                 body: JSON.stringify({"amount":this.state.text_amt, "desc" :this.state.text_desc})
             }
             // sonarcloud-disable-next-line javascript:S5332
-            fetch('http://54.173.109.232:4000/api/transactions', requestOptions)
+            fetch('http://backend:4000/api/transactions', requestOptions)
             .then(response => response.json())
             .then(data => this.populateData())
             
