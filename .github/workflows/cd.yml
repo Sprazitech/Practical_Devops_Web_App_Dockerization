@@ -73,32 +73,32 @@ jobs:
             cd ~/deploy-three-tier
 
             echo "🛠 Creating docker-compose.production.yml..."
-            cat > docker-compose.production.yml << 'EOC'
+            cat > docker-compose.production.yml <<EOC
             version: "3.8"
             services:
-            frontend:
-            image: ${IMAGE_FRONTEND}:latest
-            container_name: web-tier
-            restart: always
-            ports:
-            - "80:80"
-             networks:
-            - app-network
+              frontend:
+                image: ${IMAGE_FRONTEND}:latest
+                container_name: web-tier
+                restart: always
+                ports:
+                  - "80:80"
+                networks:
+                  - app-network
 
-            backend:
-            image: ${IMAGE_BACKEND}:latest
-            container_name: app-tier
-            restart: always
-            ports:
-            - "4000:4000"
-            env_file:
-            - .env
-            networks:
-            - app-network
+              backend:
+                image: ${IMAGE_BACKEND}:latest
+                container_name: app-tier
+                restart: always
+                ports:
+                  - "4000:4000"
+                env_file:
+                  - .env
+                networks:
+                  - app-network
 
             networks:
-            app-network:
-            driver: bridge
+              app-network:
+               driver: bridge
             EOC
 
             # Generate .env file if not exists
