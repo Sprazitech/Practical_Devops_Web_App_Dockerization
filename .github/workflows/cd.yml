@@ -45,20 +45,17 @@ jobs:
           docker tag $IMAGE_BACKEND:${{ github.sha }} $IMAGE_BACKEND:latest
           docker push $IMAGE_BACKEND:${{ github.sha }}
           docker push $IMAGE_BACKEND:latest
-
-      # ========= DEPLOY TO EC2 =========
+      
+            # ========= DEPLOY TO EC2 =========
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DOCKER_NAMESPACE
+          envs: IMAGE_FRONTEND,IMAGE_BACKEND,DOCKER_NAMESPACE
           script: |
-            FRONTEND_IMAGE="${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_frontend"
-            BACKEND_IMAGE="${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_backend"
-          
-            echo " Installing Docker & Docker Compose..."
+            echo "🔧 Installing Docker & Docker Compose..."
             sudo apt-get update -y
             sudo apt-get install -y docker.io curl
             sudo systemctl enable docker
@@ -70,15 +67,13 @@ jobs:
                 -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
             fi
-            echo " Docker & Compose Ready"
 
-            # Create deployment directory
+            echo "🗂️ Setting up deployment directory..."
             mkdir -p ~/deploy-three-tier
             cd ~/deploy-three-tier
 
-            echo "🛠 Creating docker-compose.yml..."
+            echo "📝 Creating docker-compose.yml..."
             cat > docker-compose.yml <<EOC
-            version: "3.8"
             services:
               frontend:
                 image: ${IMAGE_FRONTEND}:latest
@@ -102,10 +97,10 @@ jobs:
 
             networks:
               app-network:
-               driver: bridge
+                driver: bridge
             EOC
 
-            # Generate .env file if not exists
+            echo "🔐 Generating .env file if missing..."
             if [ ! -f .env ]; then
               echo "DB_HOST=${{ secrets.RDS_HOST }}" > .env
               echo "DB_USER=${{ secrets.RDS_USER }}" >> .env
@@ -114,11 +109,89 @@ jobs:
               sudo chmod 600 .env
             fi
 
-            echo " Adding user to Docker group..."
-            sudo usermod -aG docker $USER || true
-
-            echo " Deploying containers..."
-            sudo docker-compose -f docker-compose.yml pull
-            sudo docker-compose -f docker-compose.yml up -d
+            echo "🚀 Deploying containers..."
+            sudo docker-compose pull
+            sudo docker-compose up -d
             sudo docker system prune -f
-            echo " Deployment Successful!"
+
+            echo "✅ Deployment Successful!"
+
+
+
+
+      # # ========= DEPLOY TO EC2 =========
+      # - name: Deploy to EC2 via SSH
+      #   uses: appleboy/ssh-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     envs: DOCKER_NAMESPACE
+      #     script: |
+      #       FRONTEND_IMAGE="${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_frontend"
+      #       BACKEND_IMAGE="${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_backend"
+          
+      #       echo " Installing Docker & Docker Compose..."
+      #       sudo apt-get update -y
+      #       sudo apt-get install -y docker.io curl
+      #       sudo systemctl enable docker
+      #       sudo systemctl start docker
+
+      #       # Install Docker Compose if missing
+      #       if ! command -v docker-compose &> /dev/null; then
+      #         sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+      #           -o /usr/local/bin/docker-compose
+      #         sudo chmod +x /usr/local/bin/docker-compose
+      #       fi
+      #       echo " Docker & Compose Ready"
+
+      #       # Create deployment directory
+      #       mkdir -p ~/deploy-three-tier
+      #       cd ~/deploy-three-tier
+
+      #       echo "🛠 Creating docker-compose.yml..."
+      #       cat > docker-compose.yml <<EOC
+      #       version: "3.8"
+      #       services:
+      #         frontend:
+      #           image: ${IMAGE_FRONTEND}:latest
+      #           container_name: web-tier
+      #           restart: always
+      #           ports:
+      #             - "80:80"
+      #           networks:
+      #             - app-network
+
+      #         backend:
+      #           image: ${IMAGE_BACKEND}:latest
+      #           container_name: app-tier
+      #           restart: always
+      #           ports:
+      #             - "4000:4000"
+      #           env_file:
+      #             - .env
+      #           networks:
+      #             - app-network
+
+      #       networks:
+      #         app-network:
+      #          driver: bridge
+      #       EOC
+
+      #       # Generate .env file if not exists
+      #       if [ ! -f .env ]; then
+      #         echo "DB_HOST=${{ secrets.RDS_HOST }}" > .env
+      #         echo "DB_USER=${{ secrets.RDS_USER }}" >> .env
+      #         echo "DB_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
+      #         echo "DB_DATABASE=${{ secrets.RDS_DATABASE }}" >> .env
+      #         sudo chmod 600 .env
+      #       fi
+
+      #       echo " Adding user to Docker group..."
+      #       sudo usermod -aG docker $USER || true
+
+      #       echo " Deploying containers..."
+      #       sudo docker-compose -f docker-compose.yml pull
+      #       sudo docker-compose -f docker-compose.yml up -d
+      #       sudo docker system prune -f
+      #       echo " Deployment Successful!"
