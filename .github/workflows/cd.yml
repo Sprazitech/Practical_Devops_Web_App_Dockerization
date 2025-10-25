@@ -15,7 +15,7 @@ jobs:
       IMAGE_BACKEND: ${{ secrets.DOCKER_NAMESPACE }}/three-tier-web-app_backend }}
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -54,27 +54,27 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "🔧 Installing Docker & Docker Compose..."
+            echo " Installing Docker & Docker Compose..."
             sudo apt-get update -y
             sudo apt-get install -y docker.io
             sudo systemctl enable docker
             sudo systemctl start docker
 
             # Install Docker Compose
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+              -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
-
             echo " Docker installation complete"
 
-            # Add user to docker group for permission
+            # Add user to docker group for permission and activate in this SSH session
             sudo usermod -aG docker $USER
-            newgrp docker <<EONG
+            exec sg docker <<'SGEOF'
+            echo " Docker group activated for current session"
 
-            # Export image variables for use inside docker-compose
-            export IMAGE_FRONTEND=${IMAGE_FRONTEND}
-            export IMAGE_BACKEND=${IMAGE_BACKEND}
+            # Export images for compose
+            export IMAGE_FRONTEND="${IMAGE_FRONTEND}"
+            export IMAGE_BACKEND="${IMAGE_BACKEND}"
 
-            # Prepare deployment directory
             mkdir -p ~/deploy-three-tier
             cd ~/deploy-three-tier
 
@@ -106,7 +106,7 @@ jobs:
                 driver: bridge
             EOF
 
-            # Create .env if missing
+            # Generate .env file if not exists
             if [ ! -f .env ]; then
               echo "DB_HOST=${{ secrets.RDS_HOST }}" > .env
               echo "DB_USER=${{ secrets.RDS_USER }}" >> .env
@@ -119,4 +119,5 @@ jobs:
             sudo docker-compose -f docker-compose.production.yml pull
             sudo docker-compose -f docker-compose.production.yml up -d
             sudo docker system prune -f
-            EONG
+            echo " Deployment Successful!"
+            SGEOF
